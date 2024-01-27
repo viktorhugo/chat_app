@@ -2,16 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class CustomLoginLabel extends StatelessWidget {
-  const CustomLoginLabel({super.key});
+
+  final String route;
+
+  const CustomLoginLabel({
+    super.key, 
+    required this.route
+  });
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Column(
         children: [
-          const Text(
-            'You do not have an account ?',
-            style: TextStyle(
+          Text(
+            route == 'register' ? 'You do not have an account ?' : 'You already have an account ?',
+            style: const TextStyle(
               color: Colors.black54,
               fontSize: 15,
               fontWeight: FontWeight.w300
@@ -19,9 +25,9 @@ class CustomLoginLabel extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           GestureDetector(
-            onTap: () => context.push('/register'),
+            onTap: () => context.pushReplacement('/$route'),
             child: Text(
-              'Create one now!',
+              route == 'register' ? 'Create one now!' : 'Log in with your account',
               style: TextStyle(
                 color: Colors.blue[600],
                 fontSize: 18,

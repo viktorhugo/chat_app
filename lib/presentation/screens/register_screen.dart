@@ -42,7 +42,8 @@ class _LoginView extends StatelessWidget {
                 
                 _RegisterForm(),
                 
-                CustomLoginLabel(),
+                CustomLoginLabel(route: 'login'),
+                
                 Text(
                   'Terms and conditions',
                   style: TextStyle(
@@ -80,7 +81,7 @@ class _RegisterForm extends StatelessWidget {
 
           CustomTextFormField(
             label: 'User name',
-            icon:Icon(Icons.supervised_user_circle, size: 25, color: colors.primary,),
+            icon:Icon(Icons.perm_identity_sharp, size: 25, color: colors.primary,),
             onChanged: (value) => registerCubit.userNameChanged(value),
             errorMessage: userName.errorMessage,
           ),

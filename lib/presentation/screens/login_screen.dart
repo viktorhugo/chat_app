@@ -42,7 +42,7 @@ class _LoginView extends StatelessWidget {
                 
                 _LoginForm(),
                 
-                CustomLoginLabel(),
+                CustomLoginLabel(route: 'register'),
                 Text(
                   'Terms and conditions',
                   style: TextStyle(
