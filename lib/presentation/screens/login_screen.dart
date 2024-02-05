@@ -1,7 +1,9 @@
 import 'package:chat_app/presentation/blocs/login/login_cubit.dart';
 import 'package:chat_app/presentation/widgets/widgets.dart';
+import 'package:chat_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 
 
 class LoginScreen extends StatelessWidget {
@@ -105,7 +107,10 @@ class _LoginForm extends StatelessWidget {
               ),
               onPressed: () {
                 // when all fields are valid
-                loginCubit.login();
+                final stateLogin = loginCubit.submitLogin();
+                if (!stateLogin) return;
+                final authService = Provider.of<AuthService>(context, listen: false);
+                authService.login(loginCubit.state.email.value, loginCubit.state.password.value);
               }, 
               icon: const Icon(Icons.admin_panel_settings_outlined, color: Colors.green, size: 32), 
               label: const Text('Sign in', style: TextStyle(color: Colors.white, fontSize: 18),)

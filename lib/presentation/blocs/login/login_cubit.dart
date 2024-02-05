@@ -8,7 +8,7 @@ part 'login_state.dart';
 class LoginCubit extends Cubit<LoginFormState> {
   LoginCubit() : super(const LoginFormState());
 
-  void login() {
+  bool submitLogin() {
     print(state.password);
     print(state.email);
     emit(
@@ -22,24 +22,8 @@ class LoginCubit extends Cubit<LoginFormState> {
         ])
       )
     );
-    print('Form cubit submit $state');
-  }
-
-  void Login() {
-    print(state.password);
-    print(state.email);
-    emit(
-      state.copyWith(
-        formStatus: FormStatus.validating,
-        email: Email.dirty(state.email.value),
-        password: Password.dirty(state.password.value),
-        isValid: Formz.validate([ 
-          state.password,
-          state.email,
-        ])
-      )
-    );
-    print('Form cubit submit $state');
+    print('Form cubit submit Success full!  =====  $state');
+    return true;
   }
 
   void emailChanged(String value) {
