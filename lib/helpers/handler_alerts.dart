@@ -84,7 +84,7 @@ alertView ({
       backgroundColor: Colors.transparent,
       elevation: 0,
       behavior: SnackBarBehavior.floating,
-      duration: const Duration(milliseconds: 3500),
+      duration: const Duration(milliseconds: 4500),
       content: BounceInUp(
         child: GestureDetector(
           onTap: () => Navigator.pop(context),

@@ -1,6 +1,9 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:chat_app/models/user.dart';
+import 'package:chat_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 
@@ -27,16 +30,20 @@ class _UsersScreenState extends State<UsersScreen> {
   Widget build(BuildContext context) {
 
     final colors = Theme.of(context).colorScheme;
+    final AuthService authService = Provider.of<AuthService>(context);
+    final User user =  authService.user;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Name', style: TextStyle(color: Colors.white)),
+        title: Text(user.name, style: const TextStyle(color: Colors.white)),
         elevation: 2,
         backgroundColor: colors.primary,
         leading: IconButton(
           icon: const Icon(Icons.exit_to_app_rounded, color: Colors.white, size: 26,),
           onPressed: () {
-            
+            // TODO: Disconnect to wss
+            AuthService.deleteToken();
+            context.go('/login');
           },
         ),
         actions: [

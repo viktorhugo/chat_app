@@ -134,7 +134,12 @@ class _RegisterForm extends StatelessWidget {
                 if (res['state']) {
                   // TODO: Navigate to other page
                   context.go('/users');
-
+                  return showAlert(
+                    context: context, 
+                    title: 'Well done!', 
+                    subtitle: 'Your registration was completed successfully.', 
+                    typeShowAlert: TypeShowAlert.success
+                  );
                 } else {
                   return showAlert(
                     context: context, 

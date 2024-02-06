@@ -2,7 +2,7 @@ import 'package:chat_app/presentation/screens/screens.dart';
 import 'package:go_router/go_router.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/login',
+  initialLocation: '/loading',
   routes: [
     // home
     GoRoute(

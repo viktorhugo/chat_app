@@ -1,16 +1,35 @@
+import 'package:chat_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 
 class LoadingScreen extends StatelessWidget {
+  
   const LoadingScreen({super.key});
-
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('LoagindScreen'),
+    return Scaffold(
+      body: FutureBuilder(
+        future: checkLoginState(context),
+        builder: (context, snapshot) {
+          return const Center(
+            child: Text('Loagind...'),
+          );
+        },
       ),
-  );
+    );
   }
+
+  Future checkLoginState (BuildContext context) async {
+    final AuthService authService = Provider.of<AuthService>(context, listen: false);
+    final checkAuth = await authService.checkToken();
+    if ( !checkAuth ) return context.go('/login');
+    return context.go('/users');
+    // 
+
+  }
+
+
 }
