@@ -1,8 +1,11 @@
+import 'package:chat_app/helpers/handler_alerts.dart';
 import 'package:chat_app/presentation/blocs/login/login_cubit.dart';
 import 'package:chat_app/presentation/widgets/widgets.dart';
 import 'package:chat_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 
 
@@ -31,7 +34,7 @@ class _LoginView extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 25),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: SizedBox(
@@ -63,10 +66,15 @@ class _LoginView extends StatelessWidget {
 }
 
 
-class _LoginForm extends StatelessWidget {
+class _LoginForm extends StatefulWidget {
   
   const _LoginForm({super.key});
 
+  @override
+  State<_LoginForm> createState() => _LoginFormState();
+}
+
+class _LoginFormState extends State<_LoginForm> {
   @override
   Widget build(BuildContext context) {
 
@@ -74,6 +82,9 @@ class _LoginForm extends StatelessWidget {
     final loginCubit = context.watch<LoginCubit>(); // cuando el state cambia se renderiza el build
     final email = loginCubit.state.email;
     final password = loginCubit.state.password;
+    final validate = loginCubit.state.isValid;
+    final authService = Provider.of<AuthService>(context, listen: true);
+    var logger = Logger();
 
     return Form(
       child: Column(
@@ -101,18 +112,40 @@ class _LoginForm extends StatelessWidget {
           SizedBox(
             width: 200,
             height: 55,
-            child: FilledButton.tonalIcon(
+            child: FilledButton.icon(
+              
               style: ButtonStyle(
                 backgroundColor: MaterialStatePropertyAll<Color>(colors.primary)
               ),
-              onPressed: () {
+              onPressed: (!validate && !authService.authenticating) ? null :() async {
                 // when all fields are valid
-                final stateLogin = loginCubit.submitLogin();
-                if (!stateLogin) return;
-                final authService = Provider.of<AuthService>(context, listen: false);
-                authService.login(loginCubit.state.email.value, loginCubit.state.password.value);
+                FocusScope.of(context).unfocus();
+                if (!validate) return;
+
+                loginCubit.submitLogin();
+
+                final res = await authService.login(loginCubit.state.email.value, loginCubit.state.password.value);
+                logger.d('Response : $res');
+                if (res) {
+                  // TODO: Navigate to other page
+                  context.go('/users');
+
+                } else {
+                  return showAlert(
+                    context: context, 
+                    title: 'Oh Snap!', 
+                    subtitle: 'Credentials are incorrect, please try with different others', 
+                    typeShowAlert: TypeShowAlert.error
+                  );
+                }
               }, 
-              icon: const Icon(Icons.admin_panel_settings_outlined, color: Colors.green, size: 32), 
+              icon : const Icon(Icons.admin_panel_settings_outlined, color: Colors.green, size: 32),
+              // icon: authService.authenticating
+              //   ? SpinPerfect(
+              //       infinite: true,
+              //       child: const Icon(Icons.autorenew, color: Colors.green, size: 32)
+              //     )
+              //   : const Icon(Icons.admin_panel_settings_outlined, color: Colors.green, size: 32), 
               label: const Text('Sign in', style: TextStyle(color: Colors.white, fontSize: 18),)
             ),
           ),

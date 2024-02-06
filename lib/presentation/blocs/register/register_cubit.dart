@@ -9,9 +9,6 @@ class RegisterCubit extends Cubit<RegisterFormState> {
   RegisterCubit() : super(const RegisterFormState());
 
   void register() {
-    print(state.userName);
-    print(state.password);
-    print(state.email);
     emit(
       state.copyWith(
         formStatus: FormStatus.validating,
@@ -25,7 +22,7 @@ class RegisterCubit extends Cubit<RegisterFormState> {
         ])
       )
     );
-    print('Form cubit submit $state');
+    // print('Form cubit submit $state');
   }
 
   void userNameChanged(String value) {

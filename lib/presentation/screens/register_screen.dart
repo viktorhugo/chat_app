@@ -1,7 +1,12 @@
+import 'package:chat_app/helpers/handler_alerts.dart';
 import 'package:chat_app/presentation/blocs/register/register_cubit.dart';
 import 'package:chat_app/presentation/widgets/widgets.dart';
+import 'package:chat_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
 
 
 class RegisterScreen extends StatelessWidget {
@@ -74,6 +79,9 @@ class _RegisterForm extends StatelessWidget {
     final email = registerCubit.state.email;
     final userName = registerCubit.state.userName;
     final password = registerCubit.state.password;
+    final validate = registerCubit.state.isValid;
+    final authService = Provider.of<AuthService>(context, listen: true);
+    var logger = Logger();
 
     return Form(
       child: Column(
@@ -110,14 +118,32 @@ class _RegisterForm extends StatelessWidget {
           SizedBox(
             width: 200,
             height: 55,
-            child: FilledButton.tonalIcon(
+            child: FilledButton.icon(
               style: ButtonStyle(
                 backgroundColor: MaterialStatePropertyAll<Color>(colors.primary)
               ),
-              onPressed: () {
+              onPressed: (!validate && !authService.authenticating) ? null :() async {
                 // when all fields are valid
+                FocusScope.of(context).unfocus();
+                if (!validate) return;
+
                 registerCubit.register();
-              }, 
+
+                final res = await authService.register(registerCubit.state.userName.value, registerCubit.state.email.value, registerCubit.state.password.value);
+                logger.d('Response : $res');
+                if (res['state']) {
+                  // TODO: Navigate to other page
+                  context.go('/users');
+
+                } else {
+                  return showAlert(
+                    context: context, 
+                    title: 'Warning!', 
+                    subtitle: res['message'], 
+                    typeShowAlert: TypeShowAlert.warning
+                  );
+                }
+              },
               icon: const Icon(Icons.add_moderator_outlined, color: Colors.green, size: 32), 
               label: const Text('Register', style: TextStyle(color: Colors.white, fontSize: 18),)
             ),

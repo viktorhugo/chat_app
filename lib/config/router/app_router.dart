@@ -25,5 +25,9 @@ final appRouter = GoRouter(
       path: '/loading',
       builder: (context, state) => const LoadingScreen()
     ),
+    // GoRoute(
+    //   path: '/alert',
+    //   builder: (context, state) => const AlertScreen()
+    // ),
   ]
 );

@@ -9,8 +9,8 @@ class LoginCubit extends Cubit<LoginFormState> {
   LoginCubit() : super(const LoginFormState());
 
   bool submitLogin() {
-    print(state.password);
-    print(state.email);
+    // print(state.password);
+    // print(state.email);
     emit(
       state.copyWith(
         formStatus: FormStatus.validating,
@@ -22,8 +22,8 @@ class LoginCubit extends Cubit<LoginFormState> {
         ])
       )
     );
-    print('Form cubit submit Success full!  =====  $state');
-    return true;
+    // print('Form cubit submit Success full!  =====  $state');
+    return state.isValid;
   }
 
   void emailChanged(String value) {
