@@ -1,6 +1,7 @@
 import 'package:chat_app/config/router/app_router.dart';
 import 'package:chat_app/config/theme/app_theme.dart';
 import 'package:chat_app/services/auth_service.dart';
+import 'package:chat_app/services/web_socket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,6 +18,9 @@ class MainApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (context) => AuthService(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => WebSocketService(),
         )
       ],
       child: MaterialApp.router(

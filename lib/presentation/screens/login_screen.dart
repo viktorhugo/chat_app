@@ -127,7 +127,6 @@ class _LoginFormState extends State<_LoginForm> {
                 final res = await authService.login(loginCubit.state.email.value, loginCubit.state.password.value);
                 logger.d('Response : $res');
                 if (res) {
-                  // TODO: Navigate to other page
                   context.go('/users');
 
                 } else {
