@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:chat_app/models/user.dart';
 import 'package:chat_app/services/auth_service.dart';
+import 'package:chat_app/services/web_socket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -31,6 +32,7 @@ class _UsersScreenState extends State<UsersScreen> {
 
     final colors = Theme.of(context).colorScheme;
     final AuthService authService = Provider.of<AuthService>(context);
+    final socketService = Provider.of<WebSocketService>(context);
     final User user =  authService.user;
 
     return Scaffold(
@@ -41,7 +43,8 @@ class _UsersScreenState extends State<UsersScreen> {
         leading: IconButton(
           icon: const Icon(Icons.exit_to_app_rounded, color: Colors.white, size: 26,),
           onPressed: () {
-            // TODO: Disconnect to wss
+            // Disconnect to wss
+            socketService.closeWSSConnection();
             AuthService.deleteToken();
             context.go('/login');
           },
@@ -49,8 +52,9 @@ class _UsersScreenState extends State<UsersScreen> {
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 10),
-            // child: const Icon(Icons.check_circle, color: Colors.blue, size: 26,),
-            child: const Icon(Icons.offline_bolt, color: Colors.red, size: 26,),
+            child: socketService.serverStatus == WebSocketServerStatus.online 
+              ? const Icon( Icons.check_circle, color: Colors.blue, size: 26 )
+              : const Icon( Icons.offline_bolt, color: Colors.red, size: 26 ),
           )
         ],
       ),

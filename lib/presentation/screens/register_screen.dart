@@ -2,6 +2,7 @@ import 'package:chat_app/helpers/handler_alerts.dart';
 import 'package:chat_app/presentation/blocs/register/register_cubit.dart';
 import 'package:chat_app/presentation/widgets/widgets.dart';
 import 'package:chat_app/services/auth_service.dart';
+import 'package:chat_app/services/web_socket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -81,6 +82,7 @@ class _RegisterForm extends StatelessWidget {
     final password = registerCubit.state.password;
     final validate = registerCubit.state.isValid;
     final authService = Provider.of<AuthService>(context, listen: true);
+    final socketService = Provider.of<WebSocketService>(context);
     var logger = Logger();
 
     return Form(
@@ -132,7 +134,7 @@ class _RegisterForm extends StatelessWidget {
                 final res = await authService.register(registerCubit.state.userName.value, registerCubit.state.email.value, registerCubit.state.password.value);
                 logger.d('Response : $res');
                 if (res['state']) {
-                  // TODO: Navigate to other page
+                  socketService.startWSSConnection();
                   context.go('/users');
                   return showAlert(
                     context: context, 

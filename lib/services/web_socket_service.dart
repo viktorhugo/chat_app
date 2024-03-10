@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:chat_app/global/enviroment.dart';
 import 'package:chat_app/models/user.dart';
+import 'package:chat_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -22,18 +24,24 @@ class WebSocketService with ChangeNotifier {
 
   late WebSocketChannel channel;
 
-  get serverStatus => _webSocketServerStatus;
+  WebSocketServerStatus get  serverStatus => _webSocketServerStatus;
 
   WebSocketService() {
     // init start connection
   }
 
   void startWSSConnection() async {
+
+    if (_webSocketServerStatus == WebSocketServerStatus.online) return;
+    
+    final token = await AuthService.getToken();
+    if (token.isEmpty) return;
+
     print('_startConnection WSS');
     // in test Ipconfig IP
     final wsUrl = Uri.parse(Environment.socketURL);
     // final wsUrl = Uri.parse('wss://bands-socket-server.onrender.com:8082');
-    channel = WebSocketChannel.connect(wsUrl);
+    channel = IOWebSocketChannel.connect( wsUrl, headers: { 'x-token': token } );
 
     try {
       await channel.ready;
@@ -79,8 +87,6 @@ class WebSocketService with ChangeNotifier {
       },
       onDone: (() {
         print('Error Web Socket Server DisConnected to $wsUrl');
-        _webSocketServerStatus = WebSocketServerStatus.offline;
-        notifyListeners();
         _handleLostConnection();
       })
     );
@@ -100,16 +106,18 @@ class WebSocketService with ChangeNotifier {
   }
 
   void _handleLostConnection() {
-    _webSocketServerStatus = WebSocketServerStatus.reconnecting;
-    notifyListeners();
-    Future.delayed(const Duration(seconds: 3), () {
-      startWSSConnection();
-    });
+    if (_webSocketServerStatus != WebSocketServerStatus.offline) {
+      _webSocketServerStatus = WebSocketServerStatus.reconnecting;
+      notifyListeners();
+      Future.delayed(const Duration(seconds: 3), () {
+        startWSSConnection();
+      });
+    }
   }
 
   void closeWSSConnection() {
-    channel.sink.close(status.goingAway);
     _webSocketServerStatus = WebSocketServerStatus.offline;
+    channel.sink.close(status.goingAway);
     notifyListeners();
   }
 
