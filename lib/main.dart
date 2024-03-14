@@ -1,11 +1,11 @@
 import 'package:chat_app/config/router/app_router.dart';
 import 'package:chat_app/config/theme/app_theme.dart';
-import 'package:chat_app/services/auth_service.dart';
-import 'package:chat_app/services/web_socket_service.dart';
+import 'package:chat_app/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async{
+  // await Environment.initEnvironment();
   runApp(const MainApp());
 }
 
@@ -21,6 +21,9 @@ class MainApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => WebSocketService(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ChatService(),
         )
       ],
       child: MaterialApp.router(

@@ -97,7 +97,7 @@ class AuthService implements ChangeNotifier {
 
   Future<bool> checkToken() async {
     final token = await _storage.read(key: 'token');
-    logger.d('token: $token');
+    // logger.d('token: $token');
     if ( token == null ) return false;
 
     var url = Uri.parse('${Environment.apiURL}/auth/token-renew');
@@ -109,7 +109,7 @@ class AuthService implements ChangeNotifier {
       }
     );
     // logger.d('Response status: ${response.statusCode}');
-    logger.d('Response body: ${response.body}');
+    // logger.d('Response body: ${response.body}');
     authenticating = false;
     if (response.statusCode == 200 || response.statusCode == 201) {
       final loginResponse = loginResponseFromJson(response.body);

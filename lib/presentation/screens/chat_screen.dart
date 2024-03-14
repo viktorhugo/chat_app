@@ -1,5 +1,7 @@
 import 'package:chat_app/presentation/widgets/chat/chat_message.dart';
+import 'package:chat_app/services/services.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 
 class ChatScreen extends StatefulWidget {
@@ -23,6 +25,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
 
     final colors = Theme.of(context).colorScheme;
+    final user = Provider.of<ChatService>(context).userJustChatting;
 
     return Scaffold(
       appBar: AppBar(
@@ -32,10 +35,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             CircleAvatar(
               backgroundColor: Colors.blue[100],
               maxRadius: 14,
-              child: const Text('Vm', style: TextStyle(fontSize: 12),),
+              child: Text(user.name.substring(0,2), style: const TextStyle(fontSize: 12),),
             ),
             const SizedBox(height: 3,),
-            const Text('Victor Mosquera', style: TextStyle(color: Colors.white, fontSize: 14))
+            Text(user.name, style: const TextStyle(color: Colors.white, fontSize: 14))
           ],
         ),
         centerTitle: true,

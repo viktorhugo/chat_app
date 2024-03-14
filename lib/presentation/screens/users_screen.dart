@@ -1,7 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:chat_app/models/user.dart';
-import 'package:chat_app/services/auth_service.dart';
-import 'package:chat_app/services/web_socket_service.dart';
+import 'package:chat_app/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -18,14 +17,16 @@ class UsersScreen extends StatefulWidget {
 class _UsersScreenState extends State<UsersScreen> {
 
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  final usersService = UsersService();
 
-  final users = [
-    User(uuid: '1', name: 'Maria rendon', email: 'mariarendon@outlook.com',online: true),
-    User(uuid: '2', name: 'Cesar Salcedo', email: 'cesarsalcedo@outlook.com',online: true),
-    User(uuid: '3', name: 'Camilo Puerta', email: 'camilopiuerta@outlook.com',online: true),
-    User(uuid: '4', name: 'Elking Mosquera', email: 'elking23@outlook.com',online: false),
-    User(uuid: '5', name: 'Anguie Mosquera', email: 'anguieM34@outlook.com',online: false),
-  ];
+  List<User> users = [];
+
+  @override
+  void initState() {
+    
+    _loadUsers();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,13 +102,18 @@ class _UsersScreenState extends State<UsersScreen> {
         color: user.online ? Colors.green : Colors.redAccent,
         size: 25,
       ),
+      onTap: () {
+        final chatService = Provider.of<ChatService>(context, listen: false);
+        chatService.userJustChatting = user;
+        context.push('/chat');
+      },
     );
   }
 
   _loadUsers() async {
      // monitor network fetch
-    await Future.delayed(const Duration(milliseconds: 1000));
-
+    users = await usersService.getUsers(skip: 0); 
+    setState(() { });
     _refreshController.refreshCompleted();
   }
 }
