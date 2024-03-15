@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:chat_app/global/enviroment.dart';
 import 'package:chat_app/models/user.dart';
+import 'package:chat_app/models/users_message.dart';
 import 'package:chat_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
@@ -93,16 +94,21 @@ class WebSocketService with ChangeNotifier {
     
   }
 
-  handleSendMessage(String event, data) {
-    // send data.
+  handleSendMessage( { required UsersRequestMessage data }) {
+    // send Message
     channel.sink.add(
       jsonEncode(
         {
-          "event": event, 
-          "data": data
+          "event": "user-message", 
+          "data": {
+            "from": data.from,
+            "to": data.to,
+            "message": data.message,
+          }
         },
       ),
     );
+
   }
 
   void _handleLostConnection() {

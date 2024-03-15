@@ -1,8 +1,8 @@
+import 'package:chat_app/models/users_message.dart';
 import 'package:chat_app/presentation/widgets/chat/chat_message.dart';
 import 'package:chat_app/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -15,17 +15,35 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   final _textController = TextEditingController();
   final _focusNode = FocusNode();
-  final List<ChatMessage> _messages = [
-    // const ChatMessage(uuid: '124', text: 'Bien y tu que haces?',),
-    // const ChatMessage(uuid: '123', text: 'Hola pepe como estas?',),
-  ];
+  final List<ChatMessage> _messages = [];
+  //* services
+  late ChatService chatService;
+  late WebSocketService wssService;
+  late AuthService authService;
+  
   bool _writing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    chatService = Provider.of<ChatService>(context, listen: false);
+    wssService = Provider.of<WebSocketService>(context, listen: false);
+    authService = Provider.of<AuthService>(context, listen: false);
+  }
+
+  @override
+  void dispose(){
+    for ( ChatMessage message in _messages) {
+      message.animationController.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
 
     final colors = Theme.of(context).colorScheme;
-    final user = Provider.of<ChatService>(context).userJustChatting;
+    final user =chatService.userJustChatting;
 
     return Scaffold(
       appBar: AppBar(
@@ -44,29 +62,27 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         centerTitle: true,
         elevation: 1,
       ),
-      body: Container(
-        child: Column(
-          children: [
-
-            Flexible(
-              child: ListView.builder(
-                itemCount: _messages.length,
-                physics: const BouncingScrollPhysics(),
-                itemBuilder: (context, index) => _messages[index],
-                reverse: true,
-              )
-            ),
-
-            const Divider(height: 1,),
-
-            Container(
-              color: Colors.white,
-              child: _InputChat(),
+      body: Column(
+        children: [
+      
+          Flexible(
+            child: ListView.builder(
+              itemCount: _messages.length,
+              physics: const BouncingScrollPhysics(),
+              itemBuilder: (context, index) => _messages[index],
+              reverse: true,
             )
-          ],
-        ),
-    ),
-  );
+          ),
+      
+          const Divider(height: 1,),
+      
+          Container(
+            color: Colors.white,
+            child: _InputChat(),
+          )
+        ],
+      ),
+    );
   }
 
   Widget _InputChat() {
@@ -80,6 +96,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ///* Text box
             Flexible(
               child: TextField(
+                // style: const TextStyle(color: Colors.white),
                 controller: _textController,
                 onSubmitted: (value) => _handleSubmit(value),
                 onChanged: (text) {
@@ -92,7 +109,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   });
                 },
                 decoration: const InputDecoration.collapsed(
-                  hintText: 'Send Message'
+                  hintText: 'Enter Message',
+                  // hintStyle: TextStyle(color: Colors.white60)
                 ),
                 focusNode: _focusNode,
               )
@@ -104,7 +122,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 4.0),
                   child: IconTheme(
-                    data: const IconThemeData(color: Colors.blueAccent),
+                    data: const IconThemeData(color: Colors.blueAccent, size: 30),
                     child: IconButton(
                       highlightColor: Colors.transparent,
                       splashColor: Colors.transparent,
@@ -123,29 +141,31 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  _handleSubmit(String text) {
-    if (text.trim().isEmpty) return;
-    print(text);
+  _handleSubmit(String message) {
+    if (message.trim().isEmpty) return;
+    print(message);
     _textController.clear();
-    _focusNode.requestFocus(); ///* SOLICITAR EL FOCO
+    _focusNode.requestFocus(); //* SOLICITAR EL FOCO
     final newMessage = ChatMessage(
-      text: text,
-      uuid: '1253',
+      text: message,
+      uuid: authService.user.uuid,
       animationController: AnimationController(vsync: this, duration: const Duration(milliseconds: 700)),
     );
     newMessage.animationController.forward();
+
     _messages.insert(0, newMessage);
     setState(() {
       _writing = false;
     });
 
-    @override
-    void dispose(){
-      for ( ChatMessage message in _messages) {
-        message.animationController.dispose();
-      }
-    }
-
+    //* send message to user
+    wssService.handleSendMessage(
+      data: UsersRequestMessage(
+        event: EventMessages.userMessage,
+        message: message,
+        from: authService.user.uuid,
+        to: chatService.userJustChatting.uuid,
+      )
+    );
   } 
-
 }

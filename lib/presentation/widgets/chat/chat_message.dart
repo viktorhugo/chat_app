@@ -9,7 +9,8 @@ class ChatMessage extends StatelessWidget {
   const ChatMessage({
     super.key, 
     required this.text,
-    required this.uuid, required this.animationController
+    required this.uuid, 
+    required this.animationController
   });
 
   @override
@@ -19,10 +20,10 @@ class ChatMessage extends StatelessWidget {
       child: SizeTransition(
         sizeFactor: CurvedAnimation(
           parent: animationController, 
-          curve: Curves.elasticIn
+          curve: Curves.linear,
         ),
         child: Container(
-          child: uuid == '123' 
+          child: uuid != '123' 
             ? _myMessage()
             : _notMyMessage(),
         ),
