@@ -29,13 +29,20 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     chatService = Provider.of<ChatService>(context, listen: false);
     wssService = Provider.of<WebSocketService>(context, listen: false);
     authService = Provider.of<AuthService>(context, listen: false);
+    wssService.addListener(() { 
+      _handleListenMessage(wssService.newMessage);
+    });
+
   }
 
   @override
-  void dispose(){
+  void dispose() {
     for ( ChatMessage message in _messages) {
       message.animationController.dispose();
     }
+    wssService.newMessage = '';
+    // _messages = [];
+    // wssService.removeListener((){});
     super.dispose();
   }
 
@@ -43,7 +50,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
 
     final colors = Theme.of(context).colorScheme;
-    final user =chatService.userJustChatting;
+    final user = chatService.userJustChatting;
+
 
     return Scaffold(
       appBar: AppBar(
@@ -149,7 +157,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     final newMessage = ChatMessage(
       text: message,
       uuid: authService.user.uuid,
-      animationController: AnimationController(vsync: this, duration: const Duration(milliseconds: 700)),
+      animationController: AnimationController(vsync: this, duration: const Duration(milliseconds: 200)),
     );
     newMessage.animationController.forward();
 
@@ -160,12 +168,29 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     //* send message to user
     wssService.handleSendMessage(
+      event:  "user-message",
       data: UsersRequestMessage(
-        event: EventMessages.userMessage,
         message: message,
         from: authService.user.uuid,
         to: chatService.userJustChatting.uuid,
       )
     );
+  } 
+
+  _handleListenMessage(dynamic data) {
+    print('data');
+    print(data);
+    if (data == null) return;
+    ChatMessage chatMessage = ChatMessage(
+      text: data['message'], 
+      uuid: data['from'], 
+      animationController: AnimationController(vsync: this,duration: const Duration(milliseconds: 200))
+    );
+
+    setState(() {
+      _messages.insert(0, chatMessage);
+    });
+
+    chatMessage.animationController.forward();
   } 
 }

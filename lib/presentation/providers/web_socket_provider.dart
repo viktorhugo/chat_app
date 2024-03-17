@@ -5,7 +5,7 @@ import 'package:chat_app/global/enviroment.dart';
 import 'package:chat_app/models/user.dart';
 import 'package:chat_app/models/users_message.dart';
 import 'package:chat_app/services/auth_service.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -17,41 +17,59 @@ enum WebSocketServerStatus  {
   reconnecting
 }
 
-class WebSocketService with ChangeNotifier {
+class WebSocketServerState {
 
-  WebSocketServerStatus _webSocketServerStatus = WebSocketServerStatus.connecting;
-  dynamic _newMessage;
-  List<User> users = [];
-  late WebSocketChannel channel;
+  final WebSocketServerStatus webSocketServerStatus;
+  List<User>? users = [];
+  final IOWebSocketChannel? channel;
+  // WebSocketServerStatus get  serverStatus => webSocketServerStatus;
 
-  //* getters
-  WebSocketServerStatus get  serverStatus => _webSocketServerStatus;
-  dynamic get newMessage => _newMessage;
-  //* setters
-  set newMessage (dynamic newMessage) {
-    print(newMessage);
-    _newMessage = newMessage;
-    notifyListeners();
-  }
+  WebSocketServerState({
+    this.webSocketServerStatus = WebSocketServerStatus.offline, 
+    this.users, 
+    this.channel
+  });
+
+  WebSocketServerState copyWith({
+    WebSocketServerStatus? webSocketServerStatus,
+    List<User>? users,
+    IOWebSocketChannel? channel
+  }) => WebSocketServerState(
+    webSocketServerStatus: webSocketServerStatus ?? this.webSocketServerStatus,
+    users: users ?? this.users,
+    channel: channel ?? this.channel
+  );
+}
+
+
+class WebSocketServerNotifier extends StateNotifier<WebSocketServerState> {
+
+  WebSocketServerNotifier() : super(
+    WebSocketServerState() //* CREATION INITIAL STATE
+  );
 
   void startWSSConnection() async {
 
-    if (_webSocketServerStatus == WebSocketServerStatus.online) return;
-    
     final token = await AuthService.getToken();
+
+    if (state.webSocketServerStatus == WebSocketServerStatus.online) return;
+    
     if (token.isEmpty) return;
 
     print('_startConnection WSS');
     // in test Ipconfig IP
     final wsUrl = Uri.parse(Environment.socketURL);
     // final wsUrl = Uri.parse('wss://bands-socket-server.onrender.com:8082');
-    channel = IOWebSocketChannel.connect( wsUrl, headers: { 'x-token': token } );
+    //* create Web socket server channel connection
+    final channelConn = IOWebSocketChannel.connect( wsUrl, headers: { 'x-token': token } ); 
 
     try {
-      await channel.ready;
+      await channelConn.ready;
       print('Web Socket Server Connected to $wsUrl');
-      _webSocketServerStatus = WebSocketServerStatus.online;
-      notifyListeners();
+      state = state.copyWith( 
+        channel: channelConn,
+        webSocketServerStatus:  WebSocketServerStatus.online
+      );
     } on SocketException catch (e) {
       // Handle the exception.
       print('Error SocketException: ${e.message} - ( ${e.osError} )');
@@ -63,13 +81,12 @@ class WebSocketService with ChangeNotifier {
       return;
     }
 
-    channel.stream.listen((message) {
+    //* Listen WSS messages 
+    state.channel!.stream.listen((message) {
         final Map<String, dynamic > messageDecode = jsonDecode(message);
         print(messageDecode['event']);
-        print(messageDecode);
-        if (messageDecode['event'] == 'user-message') {
-          _newMessage = messageDecode;
-          notifyListeners();
+        if (messageDecode['event'] == 'get-all-users-connected') {
+          print(messageDecode);
         }
         if (messageDecode['event'] == 'add-vote-band') {
 
@@ -97,7 +114,7 @@ class WebSocketService with ChangeNotifier {
 
   handleSendMessage( { required String event,  required UsersRequestMessage data }) {
     // send Message
-    channel.sink.add(
+    state.channel!.sink.add(
       jsonEncode(
         {
           "event": event, 
@@ -113,9 +130,10 @@ class WebSocketService with ChangeNotifier {
   }
 
   void _handleLostConnection() {
-    if (_webSocketServerStatus != WebSocketServerStatus.offline) {
-      _webSocketServerStatus = WebSocketServerStatus.reconnecting;
-      notifyListeners();
+    if (state.webSocketServerStatus != WebSocketServerStatus.offline) {
+      state = state.copyWith( 
+        webSocketServerStatus:  WebSocketServerStatus.reconnecting
+      );
       Future.delayed(const Duration(seconds: 3), () {
         startWSSConnection();
       });
@@ -123,9 +141,14 @@ class WebSocketService with ChangeNotifier {
   }
 
   void closeWSSConnection() {
-    _webSocketServerStatus = WebSocketServerStatus.offline;
-    channel.sink.close(status.goingAway);
-    notifyListeners();
+    state = state.copyWith( 
+      webSocketServerStatus:  WebSocketServerStatus.offline,
+    );
+    state.channel!.sink.close(status.goingAway);
   }
-
 }
+
+final webSocketServerProvider = StateNotifierProvider<WebSocketServerNotifier, WebSocketServerState>((ref){
+
+  return WebSocketServerNotifier();
+});
