@@ -46,12 +46,12 @@ class Msg {
     });
 
     factory Msg.fromJson(Map<String, dynamic> json) => Msg(
-        from: json["from"],
-        to: json["to"],
-        message: json["message"],
+        from: json["from"] ?? "",
+        to: json["to"] ?? "",
+        message: json["message"] ?? "",
         createdAt: DateTime.parse(json["createdAt"]),
         updatedAt: DateTime.parse(json["updatedAt"]),
-        uuid: json["uuid"],
+        uuid: json["_id"] ?? "",
     );
 
     Map<String, dynamic> toJson() => {
@@ -60,6 +60,6 @@ class Msg {
         "message": message,
         "createdAt": createdAt.toIso8601String(),
         "updatedAt": updatedAt.toIso8601String(),
-        "uuid": uuid,
+        "_id": uuid,
     };
 }

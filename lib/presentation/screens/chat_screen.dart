@@ -1,3 +1,4 @@
+import 'package:chat_app/models/conversation_messages_response.dart';
 import 'package:chat_app/models/users_message.dart';
 import 'package:chat_app/presentation/widgets/chat/chat_message.dart';
 import 'package:chat_app/services/services.dart';
@@ -35,6 +36,25 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         _handleListenMessage(wssService.newMessage);
       }
     });
+    
+    //* get all messages to conversation
+    _getConversationMessages(uuid: authService.user.uuid);
+  }
+
+  void _getConversationMessages({ required String uuid }) async {
+    final List<Msg> messages = await chatService.getConversationMessages(from: uuid, skip: 0);
+    final history = messages.map((message) => ChatMessage(
+        text: message.message, 
+        uuid: message.from, 
+        animationController: AnimationController(vsync: this, duration: const Duration(milliseconds: 0))..forward()
+      )
+    );
+
+    setState(() {
+      _messages.insertAll(0, history);
+    });
+
+    
   }
 
   @override

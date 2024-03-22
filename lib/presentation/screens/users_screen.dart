@@ -23,7 +23,7 @@ class _UsersScreenState extends State<UsersScreen> {
 
   @override
   void initState() {
-    
+
     _loadUsers();
     super.initState();
   }
@@ -37,6 +37,8 @@ class _UsersScreenState extends State<UsersScreen> {
     final User user =  authService.user;
 
     return Scaffold(
+      
+      //* AppBar
       appBar: AppBar(
         title: Text(user.name, style: const TextStyle(color: Colors.white)),
         elevation: 2,
@@ -59,6 +61,8 @@ class _UsersScreenState extends State<UsersScreen> {
           )
         ],
       ),
+
+      //* BODY
       body: SmartRefresher(
         controller: _refreshController,
         enablePullDown: true,
@@ -69,12 +73,13 @@ class _UsersScreenState extends State<UsersScreen> {
           waterDropColor: colors.primary,
         ),
         onRefresh: () => _loadUsers(),
-        child: ListViewUsers(),
+        child: listViewUsers(),
       )
   );
   }
 
-  ListView ListViewUsers() {
+  //* users views
+  ListView listViewUsers() {
     return ListView.separated(
       physics: const BouncingScrollPhysics(),
       itemCount: users.length,
@@ -115,5 +120,14 @@ class _UsersScreenState extends State<UsersScreen> {
     users = await usersService.getUsers(skip: 0); 
     setState(() { });
     _refreshController.refreshCompleted();
+  }
+  
+  _changeStatusConnectedUser(dynamic data) async {
+    print('data ');
+    print(data);
+    if ( data == null) return;
+     // monitor network fetch
+    users[users.indexWhere((element) => element.uuid == data['uuid'])].online = data['connected'];
+    setState(() { });
   }
 }

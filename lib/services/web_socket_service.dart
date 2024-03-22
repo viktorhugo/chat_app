@@ -21,6 +21,7 @@ class WebSocketService extends ChangeNotifier {
 
   WebSocketServerStatus _webSocketServerStatus = WebSocketServerStatus.connecting;
   dynamic _newMessage;
+  dynamic _userStatusChangeConnected;
   List<User> users = [];
   late WebSocketChannel channel;
 
@@ -30,6 +31,13 @@ class WebSocketService extends ChangeNotifier {
   //* setters
   set newMessage (dynamic newMessage) {
     _newMessage = newMessage;
+    notifyListeners();
+  }
+
+  dynamic get userStatusChangeConnected => _userStatusChangeConnected;
+  //* setters
+  set userStatusChangeConnected (dynamic newMessage) {
+    _userStatusChangeConnected = newMessage;
     notifyListeners();
   }
 
@@ -68,13 +76,7 @@ class WebSocketService extends ChangeNotifier {
         if (messageDecode['event'] == 'user-message') {
           newMessage = messageDecode;
         }
-        if (messageDecode['event'] == 'add-vote-band') {
-
-        }
-        if (messageDecode['event'] == 'create-band') {
-
-        }
-        if (messageDecode['event'] == 'Delete-band') {
+        if (messageDecode['event'] == 'user-changed-status-connected') {
 
         }
         // channel.sink.add('received!');

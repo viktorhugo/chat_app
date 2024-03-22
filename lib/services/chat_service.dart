@@ -22,7 +22,7 @@ class ChatService with ChangeNotifier {
 
 
   // LOGIN METHOD
-  Future<List<Msg>> getConversationMessages({required String from, required String to, required int skip}) async {
+  Future<List<Msg>> getConversationMessages({required String from, required int skip}) async {
     try {
       final response = await dio.post(
         '/messages/get-conversations',
@@ -34,15 +34,15 @@ class ChatService with ChangeNotifier {
         ),
         data: {
           'from': from,
-          'to': to,
+          'to': userJustChatting.uuid,
           'skip': skip
         }
       );
-      final usersResponse = conversationsMessagesResponseFromJson(response.data);
+      final usersResponse = ConversationsMessagesResponse.fromJson(response.data);
       return usersResponse.msg;
     } catch (e) {
       print(e);
-      throw Exception('');
+      throw Exception(e);
     }
     
   
