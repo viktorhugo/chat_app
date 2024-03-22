@@ -17,7 +17,7 @@ enum WebSocketServerStatus  {
   reconnecting
 }
 
-class WebSocketService with ChangeNotifier {
+class WebSocketService extends ChangeNotifier {
 
   WebSocketServerStatus _webSocketServerStatus = WebSocketServerStatus.connecting;
   dynamic _newMessage;
@@ -29,7 +29,6 @@ class WebSocketService with ChangeNotifier {
   dynamic get newMessage => _newMessage;
   //* setters
   set newMessage (dynamic newMessage) {
-    print(newMessage);
     _newMessage = newMessage;
     notifyListeners();
   }
@@ -66,10 +65,8 @@ class WebSocketService with ChangeNotifier {
     channel.stream.listen((message) {
         final Map<String, dynamic > messageDecode = jsonDecode(message);
         print(messageDecode['event']);
-        print(messageDecode);
         if (messageDecode['event'] == 'user-message') {
-          _newMessage = messageDecode;
-          notifyListeners();
+          newMessage = messageDecode;
         }
         if (messageDecode['event'] == 'add-vote-band') {
 

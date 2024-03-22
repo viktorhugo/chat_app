@@ -29,21 +29,22 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     chatService = Provider.of<ChatService>(context, listen: false);
     wssService = Provider.of<WebSocketService>(context, listen: false);
     authService = Provider.of<AuthService>(context, listen: false);
-    wssService.addListener(() { 
-      _handleListenMessage(wssService.newMessage);
-    });
 
+    wssService.addListener(() { 
+      if (mounted) {
+        _handleListenMessage(wssService.newMessage);
+      }
+    });
   }
 
   @override
   void dispose() {
+    super.dispose();
+    wssService.removeListener(() { });
+    
     for ( ChatMessage message in _messages) {
       message.animationController.dispose();
     }
-    wssService.newMessage = '';
-    // _messages = [];
-    // wssService.removeListener((){});
-    super.dispose();
   }
 
   @override
@@ -51,8 +52,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     final colors = Theme.of(context).colorScheme;
     final user = chatService.userJustChatting;
-
-
+    
     return Scaffold(
       appBar: AppBar(
         backgroundColor: colors.primary,
@@ -86,15 +86,14 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       
           Container(
             color: Colors.white,
-            child: _InputChat(),
+            child: _inputChat(),
           )
         ],
       ),
     );
   }
 
-  Widget _InputChat() {
-    
+  Widget _inputChat() {
     return SafeArea(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -166,7 +165,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       _writing = false;
     });
 
-    //* send message to user
+    // send message to user
     wssService.handleSendMessage(
       event:  "user-message",
       data: UsersRequestMessage(
@@ -177,9 +176,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   } 
 
+  // Add new Message to messages
   _handleListenMessage(dynamic data) {
-    print('data');
-    print(data);
     if (data == null) return;
     ChatMessage chatMessage = ChatMessage(
       text: data['message'], 

@@ -60,7 +60,7 @@ class AuthService implements ChangeNotifier {
       return true;
     }
     if (response.statusCode == 401 || response.statusCode == 400) {
-      final loginResponse = response.body;
+      // final loginResponse = response.body;
       return false;
     }
   }
@@ -118,7 +118,7 @@ class AuthService implements ChangeNotifier {
       return true;
     }
     else {
-      final loginResponse = response.body;
+      // final loginResponse = response.body;
       return false;
     }
   }
